@@ -4,6 +4,7 @@ import FileUpload from './components/FileUpload';
 import HexViewer from './components/HexViewer';
 import ComponentTree from './components/ComponentTree';
 import { parseJPEG } from './utils/jpegParser';
+import { modifyPastedSOS } from './utils/sosModifier';
 
 function App() {
   const [fileData, setFileData] = useState(null);
@@ -122,12 +123,25 @@ function App() {
       let insertOffset = targetNode.start + targetNode.size;
       let payloadBytes = clipboard.bytes;
       
-      // Edge Case: If copying an entire SOS structure that has no trailing ScanData automatically, append 0x00 so it doesn't break decoders.
-      if (clipboard.node.type === 'struct SOS' && payloadBytes[payloadBytes.length - 1] !== 0x00) {
-         const extended = new Uint8Array(payloadBytes.length + 1);
-         extended.set(payloadBytes);
-         extended[payloadBytes.length] = 0x00;
-         payloadBytes = extended;
+      // SOS Auto-Modifier: When pasting a Y-only SOS, auto-assign the next
+      // progressive refinement pass and generate valid all-EOB scan data.
+      let sosPassInfo = null;
+      if (clipboard.node.type === 'struct SOS') {
+        const result = modifyPastedSOS(payloadBytes, new Uint8Array(prevData));
+        if (result.error) {
+          console.warn('SOS Modifier:', result.error);
+          // Fallback: append 0x00 if original behavior needed
+          if (payloadBytes[payloadBytes.length - 1] !== 0x00) {
+            const extended = new Uint8Array(payloadBytes.length + 1);
+            extended.set(payloadBytes);
+            extended[payloadBytes.length] = 0x00;
+            payloadBytes = extended;
+          }
+        } else {
+          payloadBytes = result.bytes;
+          sosPassInfo = result.pass;
+          console.log(`SOS Auto-Modifier: Assigned pass Ss=${sosPassInfo.Ss} Se=${sosPassInfo.Se} Ah=${sosPassInfo.Ah} Al=${sosPassInfo.Al} (${result.blockCount} EOB blocks, ${payloadBytes.length} bytes)`);
+        }
       }
 
       const newData = new Uint8Array(prevData.length + payloadBytes.length);
@@ -161,7 +175,8 @@ function App() {
 
       try {
         setParsedData(parseJPEG(newData.buffer));
-        showToast(`Pasted ${clipboard.node.name} securely${parentSeg ? ` (Patched ${parentSeg.name} size)` : ''}`);
+        const sosLabel = sosPassInfo ? ` [Y AC Ss=${sosPassInfo.Ss}..${sosPassInfo.Se} Ah=${sosPassInfo.Ah} Al=${sosPassInfo.Al}]` : '';
+        showToast(`Pasted ${clipboard.node.name}${sosLabel}${parentSeg ? ` (Patched ${parentSeg.name} size)` : ''}`);
       } catch (e) {
         console.warn("Parse failure on paste", e);
       }

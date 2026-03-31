@@ -21,7 +21,7 @@ Make sure you have [Node.js](https://nodejs.org/) installed on your machine.
 
 1. Clone this repository to your local machine:
     ```bash
-    git clone https://github.com/your-username/jpegforge.git
+    git clone https://github.com/ziry4b/jpegforge.git
     cd jpegforge
     ```
 
