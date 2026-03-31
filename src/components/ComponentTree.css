@@ -1,0 +1,96 @@
+/* ComponentTree.css */
+.table-tree-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-family: var(--font-sans);
+  background: var(--bg-panel-solid);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-tree-header {
+  display: grid;
+  grid-template-columns: 2.5fr 2fr 80px 80px 1.5fr;
+  padding: 8px 16px;
+  background: rgba(30, 41, 59, 0.95);
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table-tree-row {
+  display: grid;
+  grid-template-columns: 2.5fr 2fr 80px 80px 1.5fr;
+  padding: 4px 16px;
+  font-size: 0.85rem;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.2);
+  cursor: pointer;
+  align-items: center;
+  user-select: none;
+  transition: background 0.1s;
+}
+
+.table-tree-row:hover {
+  background: var(--tree-item-hover);
+}
+
+.table-tree-row:active {
+  background: var(--tree-item-selected);
+}
+
+.table-tree-row.row-selected {
+  background: rgba(163, 113, 247, 0.15); /* Accent highlight background */
+  border-left: 2px solid var(--accent-color);
+  padding-left: 14px;
+}
+
+.table-tree-row.drag-over-before {
+  border-top: 2px solid var(--accent-color);
+}
+
+.table-tree-row.drag-over-after {
+  border-bottom: 2px solid var(--accent-color);
+}
+
+.col-name {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.col-value { 
+  color: var(--text-primary); 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  padding-right: 8px;
+}
+
+.col-start { 
+  color: var(--hex-offset); 
+  font-family: var(--font-mono); 
+}
+
+.col-size { 
+  color: var(--hex-offset); 
+  font-family: var(--font-mono); 
+}
+
+.col-type { 
+  color: #a371f7; /* special purple specifically to pop structure types */
+  font-family: var(--font-mono); 
+  font-size: 0.8rem; 
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
