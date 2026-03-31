@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { FileSearch, XCircle, ClipboardType } from 'lucide-react';
+import { FileSearch, XCircle, ClipboardType, Download } from 'lucide-react';
 import FileUpload from './components/FileUpload';
 import HexViewer from './components/HexViewer';
 import ComponentTree from './components/ComponentTree';
@@ -39,6 +39,24 @@ function App() {
     setParsedData(null);
     setSelectedRange(null);
     setClipboard(null);
+  };
+
+  const handleSaveFile = () => {
+    if (!fileData) return;
+    try {
+      const blob = new Blob([fileData], { type: 'image/jpeg' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `forged_${fileName}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("File downloaded successfully!");
+    } catch (e) {
+      alert("Failed to save file: " + e.message);
+    }
   };
 
   const handleSelectRange = (offset, length) => {
@@ -283,6 +301,9 @@ function App() {
             <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', padding: '4px 12px', background: 'var(--bg-panel-solid)', borderRadius: '12px' }}>
               {fileName} ({(fileData.length / 1024).toFixed(1)} KB)
             </span>
+            <button className="btn-primary" onClick={handleSaveFile}>
+              <Download size={18} /> Save As
+            </button>
             <button className="btn-primary" onClick={handleClear} style={{ background: 'transparent', boxShadow: 'none', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}>
               <XCircle size={18} /> Clear
             </button>
