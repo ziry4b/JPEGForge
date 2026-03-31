@@ -13,6 +13,7 @@ function App() {
   const [selectedRange, setSelectedRange] = useState(null);
   const [clipboard, setClipboard] = useState(null); // { node, bytes }
   const [toastMsg, setToastMsg] = useState('');
+  const [sosAutoModify, setSosAutoModify] = useState(false);
 
   const showToast = (msg) => {
     setToastMsg(msg);
@@ -123,20 +124,11 @@ function App() {
       let insertOffset = targetNode.start + targetNode.size;
       let payloadBytes = clipboard.bytes;
       
-      // SOS Auto-Modifier: When pasting a Y-only SOS, auto-assign the next
-      // progressive refinement pass and generate valid all-EOB scan data.
       let sosPassInfo = null;
-      if (clipboard.node.type === 'struct SOS') {
+      if (sosAutoModify && clipboard.node.type === 'struct SOS') {
         const result = modifyPastedSOS(payloadBytes, new Uint8Array(prevData));
         if (result.error) {
           console.warn('SOS Modifier:', result.error);
-          // Fallback: append 0x00 if original behavior needed
-          if (payloadBytes[payloadBytes.length - 1] !== 0x00) {
-            const extended = new Uint8Array(payloadBytes.length + 1);
-            extended.set(payloadBytes);
-            extended[payloadBytes.length] = 0x00;
-            payloadBytes = extended;
-          }
         } else {
           payloadBytes = result.bytes;
           sosPassInfo = result.pass;
@@ -182,7 +174,7 @@ function App() {
       }
       return newData;
     });
-  }, [clipboard, parsedData]);
+  }, [clipboard, parsedData, sosAutoModify]);
 
   const handleDelete = useCallback((targetNode) => {
     if (!fileData || !targetNode || targetNode.start === undefined) return;
@@ -316,6 +308,15 @@ function App() {
             <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', padding: '4px 12px', background: 'var(--bg-panel-solid)', borderRadius: '12px' }}>
               {fileName} ({(fileData.length / 1024).toFixed(1)} KB)
             </span>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: '0.85rem', color: sosAutoModify ? 'var(--accent-color)' : 'var(--text-secondary)', padding: '4px 10px', background: 'var(--bg-panel-solid)', borderRadius: '12px', userSelect: 'none' }}>
+              <input
+                type="checkbox"
+                checked={sosAutoModify}
+                onChange={(e) => setSosAutoModify(e.target.checked)}
+                style={{ accentColor: 'var(--accent-color)', cursor: 'pointer' }}
+              />
+              SOS Auto-Forge
+            </label>
             <button className="btn-primary" onClick={handleSaveFile}>
               <Download size={18} /> Save As
             </button>
