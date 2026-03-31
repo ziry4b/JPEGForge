@@ -7,6 +7,7 @@ export const MARKERS = {
   0xFFE0: 'M_APP0',
   0xFFE1: 'M_APP1',
   0xFFE2: 'M_APP2',
+  0xFFDD: 'M_DRI (FFDDh)',
   0xFFFE: 'M_COMM'
 };
 
@@ -114,6 +115,9 @@ export function parseJPEG(buffer) {
     } else if (markerVal === 0xFFDA) {
         structType = 'struct SOS';
         baseName = `Start of Scan (SOS)`;
+    } else if (markerVal === 0xFFDD) {
+        structType = 'struct DRI';
+        baseName = `Define Restart Interval (DRI)`;
     } else if (markerVal === 0xFFFE) {
         structType = 'struct COMMENT';
         baseName = 'File Comment';
@@ -213,6 +217,12 @@ export function parseJPEG(buffer) {
             segNode.children.push(hTable);
             ptr += structSize;
         }
+    }
+
+    // DRI
+    if (markerVal === 0xFFDD) {
+        const ri = view.getUint16(ptr);
+        segNode.children.push({ name: 'Restart Interval', value: ri.toString(), type: 'WORD', start: ptr, size: 2 });
     }
 
     fileNode.children.push(segNode);

@@ -140,7 +140,7 @@ function App() {
         } else {
           payloadBytes = result.bytes;
           sosPassInfo = result.pass;
-          console.log(`SOS Auto-Modifier: Assigned pass Ss=${sosPassInfo.Ss} Se=${sosPassInfo.Se} Ah=${sosPassInfo.Ah} Al=${sosPassInfo.Al} (${result.blockCount} EOB blocks, ${payloadBytes.length} bytes)`);
+          console.log(`SOS Auto-Modifier: Ss=${sosPassInfo.Ss} Se=${sosPassInfo.Se} Ah=${sosPassInfo.Ah} Al=${sosPassInfo.Al} | ${result.blockCount} blocks | DRI=${result.restartInterval} | ${payloadBytes.length} bytes`);
         }
       }
 
